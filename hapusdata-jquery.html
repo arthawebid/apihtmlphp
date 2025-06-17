@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ubah Data Mahasiswa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <style>
+        .jarak{padding-top: 30px;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Ubah Data Mahasiswa</h3>
+        
+        <div class="alert alert-primary" role="alert" id="sukses">
+          Data Telah di Hapus
+        </div>
+        <div class="alert alert-danger" role="alert" id="gagal">
+          Data Gagal di Hapus
+        </div>
+        
+        <form id="formDataMHS" method="POST" action="http://wpx.ptov.my.id/srv/create.php">
+            <div class="form-group">
+                <label class="form-label">NIM</label>
+                <input class="form-control" type="text" name="txNIM" id="txNIM" disabled>
+            </div>  
+            <div class="form-group">
+                <label class="form-label">Nama Mahasiswa</label>
+                <input class="form-control" type="text" name="txNAMA" id="txNAMA" disabled>
+            </div>
+            <div class="form-group">
+                <label class="form-label">TGL Lahir</label>
+                <input class="form-control" type="date" name="txTGL" id="txTGL" disabled>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Jenis Kelamin</label>
+                <select class="form-control" name="txJK" id="txJK" disabled>
+                    <option disabled selected>Pilih Jenis Kelamin</option>
+                    <option value="L">Laki-Laki</option>
+                    <option value="P">Perempuan</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Alamat</label>
+                <input class="form-control" type="text" name="txALAMAT" id="txALAMAT" disabled>
+            </div> 
+            <div class="form-group jarak">
+                <button type="submit" id="cmdSIMPAN" class="btn btn-danger">Hapus</button>
+                <a class="btn btn-warning" href="datamahasiswa.html">Batal</a>
+            </div>      
+        </form>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script>
+        
+        $(function(){
+            $("#sukses").hide()
+            $("#gagal").hide()
+            
+            //mencari data berdasarkan NIM
+            let qs = window.location.search;
+            let urlp = new URLSearchParams(qs);
+            let nimp = urlp.get("nim");
+            let urltarget = "http://wpx.ptov.my.id/srv/mhsbynim.php";
+            let dta = `nim=${nimp}`
+            
+            $.ajax({
+                url: urltarget,
+                type: 'GET',
+                dataType: 'json',
+                data: dta,
+                success: function(rhsl){
+                    $("#txNIM").val(rhsl["isi"]["NIM"])
+                    $("#txNAMA").val(rhsl["isi"]["NAMA"])
+                    $("#txTGL").val(rhsl["isi"]["TGL"])
+                    let jkx = (rhsl["isi"]["JKEL"]=="L")?1:2
+                    $('#txJK').prop('selectedIndex', jkx);
+                    $("#txALAMAT").val(rhsl["isi"]["ALAMAT"])
+                },
+                error: function(){
+                    $("#gagal").show()
+                    $("#gagal").html("Terjadi masalah pada menampilkan data berdasarkan NIM")
+                }
+            })
+            
+            $("#formDataMHS").submit(function(e){
+                e.preventDefault();
+                let nim = $("#txNIM").val()
+                let dta = `NIM=${nim}`
+                urltarget = "http://wpx.ptov.my.id/srv/mhsdestroy.php"
+                $.ajax({
+                    url: urltarget,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: dta,
+                    success: function(){
+                        $("#sukses").show()
+                        setTimeout(()=>{
+                            window.location.href="datamahasiswa.html";
+                        },2000)
+                    },
+                    error: function(){
+                        $("#gagal").show()
+                        $("#gagal").html("Terjadi masalah pada pengiriman data ke server")
+                    }
+                })
+            })
+        })
+    </script>
+</body>
+</html>
